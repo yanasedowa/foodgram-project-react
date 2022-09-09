@@ -1,5 +1,5 @@
 # foodgram
-![Django-app workflow](https://github.com/yanasedowa/foodgram-project-react/actions/workflows/main.yml/badge.svg?event=push)
+![Foodgram workflow](https://github.com/yanasedowa/foodgram-project-react/actions/workflows/main.yml/badge.svg?event=push)
 
 ### Описание
 
@@ -37,11 +37,11 @@ git@github.com:yanasedowa/foodgram-project-react.git
 
 ```
 
-cd yamdb_final/infra/nginx
+cd foodgram-project-react/infra
 
 ```
 
-В файле `default.conf`:
+В файле `nginx.conf`:
 
 ```
 
@@ -49,21 +49,14 @@ cd yamdb_final/infra/nginx
 
 ```
 
-Скопировать файлы 'docker-compose.yaml' и 'nginx/default.conf' из вашего проекта на сервер в home/<ваш_username>/docker-compose.yaml и home/<ваш_username>/nginx/default.conf соответственно:
-
-В домашней директории на сервере:
-
-```
-mkdir nginx
-
-```
+Скопировать файлы 'docker-compose.yaml' и 'nginx.conf' из вашего проекта на сервер в home/<ваш_username>/docker-compose.yaml и home/<ваш_username>/nginx.conf соответственно:
 
 В локальном репозитории:
 
 ```
 
 scp docker-compose.yaml <username>@<host>:/home/<username>/docker-compose.yaml
-scp default.conf <username>@<host>:/home/<username>/nginx/default.conf
+scp nginx.conf <username>@<host>:/home/<username>/nginx.conf
 
 ```
 
@@ -118,56 +111,90 @@ sudo chmod +x /usr/local/bin/docker-compose
 
 ```
 
-docker-compose exec web python manage.py loaddata fixtures.json
+docker-compose exec web python manage.py uploadcsv
 
 ```
 
-Документация к проекту:
-
-http://127.0.0.1:8000/redoc
 
 ### Примеры запросов:
 
-Получить список всех категорий
+Получить список рецептов
 
-Права доступа: Доступно без токена
+Права доступа: Страница доступна всем пользователям
 
 **GET**
-/http://localhost/api/v1/categories/
+http://localhost/api/recipes/
 
 *Ответ*
 **200**
 ```
-[
-  {
-    "count": 0,
-    "next": "string",
-    "previous": "string",
-    "results": [
-      {
-        "name": "string",
-        "slug": "string"
-      }
-    ]
-  }
-]
+{
+  "count": 123,
+  "next": "http://foodgram.example.org/api/recipes/?page=4",
+  "previous": "http://foodgram.example.org/api/recipes/?page=2",
+  "results": [
+    {
+      "id": 0,
+      "tags": [
+        {
+          "id": 0,
+          "name": "Завтрак",
+          "color": "#E26C2D",
+          "slug": "breakfast"
+        }
+      ],
+      "author": {
+        "email": "user@example.com",
+        "id": 0,
+        "username": "string",
+        "first_name": "Вася",
+        "last_name": "Пупкин",
+        "is_subscribed": false
+      },
+      "ingredients": [
+        {
+          "id": 0,
+          "name": "Картофель отварной",
+          "measurement_unit": "г",
+          "amount": 1
+        }
+      ],
+      "is_favorited": true,
+      "is_in_shopping_cart": true,
+      "name": "string",
+      "image": "http://foodgram.example.org/media/recipes/images/image.jpeg",
+      "text": "string",
+      "cooking_time": 1
+    }
+  ]
+}
 ```
 
-Создать категорию.
+Создать рецепт.
 
-Права доступа: Администратор.
-
-Поле slug каждой категории должно быть уникальным.
+Права доступа: Доступно только авторизованному пользователю
 
 **POST**
-http://localhost/api/v1/categories/
+http://localhost/api/recipes/
 
 *Передаваемые данные*
 
 ```
 {
+  "ingredients": [
+    {
+      "id": 1123,
+      "amount": 10
+    }
+  ],
+  "tags": [
+    1,
+    2
+  ],
+  "image": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABAgMAAABieywaAAAACVBMVEUAAAD///9fX1/S0ecCAAAACXBIWXMAAA7EAAAOxAGVKw4bAAAACklEQVQImWNoAAAAggCByxOyYQAAAABJRU5ErkJggg==",
   "name": "string",
-  "slug": "string"
+  "text": "string",
+  "cooking_time": 1
 }
 ```
 
@@ -175,8 +202,37 @@ http://localhost/api/v1/categories/
 **201**
 ```
 {
+  "id": 0,
+  "tags": [
+    {
+      "id": 0,
+      "name": "Завтрак",
+      "color": "#E26C2D",
+      "slug": "breakfast"
+    }
+  ],
+  "author": {
+    "email": "user@example.com",
+    "id": 0,
+    "username": "string",
+    "first_name": "Вася",
+    "last_name": "Пупкин",
+    "is_subscribed": false
+  },
+  "ingredients": [
+    {
+      "id": 0,
+      "name": "Картофель отварной",
+      "measurement_unit": "г",
+      "amount": 1
+    }
+  ],
+  "is_favorited": true,
+  "is_in_shopping_cart": true,
   "name": "string",
-  "slug": "string"
+  "image": "http://foodgram.example.org/media/recipes/images/image.jpeg",
+  "text": "string",
+  "cooking_time": 1
 }
 ```
 
@@ -185,35 +241,42 @@ http://localhost/api/v1/categories/
 ```
 {
   "field_name": [
-    "string"
+    "Обязательное поле."
   ]
 }
 ```
-Удалить категорию.
+Удалить рецепт.
 
-Права доступа: Администратор.
+Права доступа: Доступно только автору данного рецепта
 
 **DELETE**
-http://localhost/api/v1/categories/{slug}/
+http://localhost/api/recipes/{id}/
 
-Обновить информацию о произведении
+Обновить рецепт
 
-Права доступа: Администратор
+Права доступа: Доступно только автору данного рецепта
 
 **PATCH**
-http://localhost/api/v1/titles/{titles_id}/
+http://localhost/api/recipes/{id}/
 
 *Передаваемые данные*
 
 ```
 {
-  "name": "string",
-  "year": 0,
-  "description": "string",
-  "genre": [
-    "string"
+  "ingredients": [
+    {
+      "id": 1123,
+      "amount": 10
+    }
   ],
-  "category": "string"
+  "tags": [
+    1,
+    2
+  ],
+  "image": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABAgMAAABieywaAAAACVBMVEUAAAD///9fX1/S0ecCAAAACXBIWXMAAA7EAAAOxAGVKw4bAAAACklEQVQImWNoAAAAggCByxOyYQAAAABJRU5ErkJggg==",
+  "name": "string",
+  "text": "string",
+  "cooking_time": 1
 }
 ```
 
@@ -222,20 +285,36 @@ http://localhost/api/v1/titles/{titles_id}/
 ```
 {
   "id": 0,
-  "name": "string",
-  "year": 0,
-  "rating": 0,
-  "description": "string",
-  "genre": [
+  "tags": [
     {
-      "name": "string",
-      "slug": "string"
+      "id": 0,
+      "name": "Завтрак",
+      "color": "#E26C2D",
+      "slug": "breakfast"
     }
   ],
-  "category": {
-    "name": "string",
-    "slug": "string"
-  }
+  "author": {
+    "email": "user@example.com",
+    "id": 0,
+    "username": "string",
+    "first_name": "Вася",
+    "last_name": "Пупкин",
+    "is_subscribed": false
+  },
+  "ingredients": [
+    {
+      "id": 0,
+      "name": "Картофель отварной",
+      "measurement_unit": "г",
+      "amount": 1
+    }
+  ],
+  "is_favorited": true,
+  "is_in_shopping_cart": true,
+  "name": "string",
+  "image": "http://foodgram.example.org/media/recipes/images/image.jpeg",
+  "text": "string",
+  "cooking_time": 1
 }
 ```
 
