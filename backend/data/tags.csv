@@ -1,3 +1,2 @@
-обед,#008000,lunch
-ужин,#7B68EE,dinner
-завтрак,#FF4500,breakfast
+перекус,,fast,#008000
+полдник,latelunch,#FF4500

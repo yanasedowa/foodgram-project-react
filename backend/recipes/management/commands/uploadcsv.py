@@ -50,8 +50,8 @@ class Command(BaseCommand):
                     else:
                         Tag.objects.get_or_create(
                             name=row[0],
-                            color=row[1],
-                            slug=row[2]
+                            slug=row[1],
+                            color=row[2]
                         )
             return self.stdout.write(Fore.GREEN + 'OK')
         except Exception as error:
