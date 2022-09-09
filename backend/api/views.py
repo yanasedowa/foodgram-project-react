@@ -26,6 +26,7 @@ User = get_user_model()
 
 
 class IngredientsViewSet(viewsets.ReadOnlyModelViewSet):
+    pagination_class = None
     queryset = Ingredient.objects.all()
     serializer_class = IngredientSerializer
     permission_classes = (AdminOrReadOnly,)
@@ -34,6 +35,7 @@ class IngredientsViewSet(viewsets.ReadOnlyModelViewSet):
 
 
 class TagsViewSet(viewsets.ReadOnlyModelViewSet):
+    pagination_class = None
     queryset = Tag.objects.all()
     serializer_class = TagSerializer
     permission_classes = (AdminOrReadOnly,)
@@ -52,6 +54,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
 
 
 class ShoppingCartViewSet(viewsets.ModelViewSet):
+    pagination_class = None
     queryset = ShoppingCart.objects.all()
     serializer_class = ShoppingCartSerializer
     pagination_class = PageNumberPagination
@@ -137,7 +140,7 @@ class FavoriteViewSet(viewsets.ModelViewSet):
 
 
 class FollowViewSet(UserViewSet):
-    pagination_class = PageNumberPagination
+    pagination_class = None
 
     @action(
         methods=['post'],
