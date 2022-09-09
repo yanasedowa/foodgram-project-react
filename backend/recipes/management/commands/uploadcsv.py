@@ -2,7 +2,7 @@ import csv
 
 from colorama import Fore, init
 from django.core.management.base import BaseCommand
-from recipes.models import Ingredient
+from recipes.models import Ingredient, Tag
 
 init(autoreset=True)
 
@@ -36,6 +36,30 @@ class Command(BaseCommand):
         finally:
             csvfile.close()
 
+    def fill_table_tags(self):
+        self.stdout.write(
+            '  Applying /data/tags.csv', ending='... '
+        )
+        try:
+            with open('data/tags.csv',
+                      encoding='utf-8') as csvfile:
+                reader = csv.reader(csvfile, delimiter=',')
+                for row_num, row in enumerate(reader):
+                    if row_num == 0:
+                        continue
+                    else:
+                        Tag.objects.get_or_create(
+                            name=row[0],
+                            color=row[1],
+                            slug=row[2]
+                        )
+            return self.stdout.write(Fore.GREEN + 'OK')
+        except Exception as error:
+            self.stderr.write(Fore.RED + 'FALSE')
+            raise Exception(error)
+        finally:
+            csvfile.close()
+
     def handle(self, *args, **options):
         self.stdout.write(
             'Operations to perform:\n'
@@ -45,6 +69,7 @@ class Command(BaseCommand):
         )
         try:
             self.fill_table_ingredients()
+            self.fill_table_tags()
         except Exception as error:
             self.stderr.write(
                 Fore.RED + f'Execution error - {error}!'
