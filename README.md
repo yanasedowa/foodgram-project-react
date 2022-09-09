@@ -110,17 +110,7 @@ sudo chmod +x /usr/local/bin/docker-compose
 
 ```
 
-После деплоя будут созданы и запущены в фоновом режиме контейнеры (db, web, nginx).
-
-Выполнить миграции, создать суперпользователя, подгрузить статику:
-
-```
-
-docker-compose exec web python manage.py migrate
-docker-compose exec web python manage.py createsuperuser
-docker-compose exec web python manage.py collectstatic --no-input 
-
-```
+После деплоя будут созданы и запущены в фоновом режиме контейнеры (db, backend, frontend, nginx).
 
 Приложение становится доступным по адресу http://localhost.
 
