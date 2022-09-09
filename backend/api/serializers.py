@@ -1,4 +1,5 @@
 from django.contrib.auth import get_user_model
+from django.db.models import F
 from djoser.serializers import UserCreateSerializer, UserSerializer
 from drf_extra_fields.fields import Base64ImageField
 from rest_framework import serializers
@@ -141,6 +142,11 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
         model = Recipe
         fields = ('author', 'tags', 'ingredients', 'name',
                   'image', 'text', 'cooking_time')
+
+    def get_ingredients(self, obj):
+        return obj.ingredients.values(
+            'id', 'name', 'measurement_unit', amount=F('recipe__amount')
+        )
 
     def validate(self, data):
         tags = data.get('tags')
