@@ -14,13 +14,13 @@ from rest_framework.response import Response
 from recipes.models import (Favorite, Ingredient, IngredientAmount, Recipe,
                             ShoppingCart, Tag)
 from users.models import Follow
-
 from .filters import IngredientSearchFilter, RecipeFilter
 from .permissions import AdminOrReadOnly, AdminUserOrReadOnly
 from .serializers import (FavoriteSerializer, FollowSerializer,
                           IngredientSerializer, RecipeCreateSerializer,
                           RecipePreviewSerializer, RecipeSerializer,
                           ShoppingCartSerializer, TagSerializer)
+from .utils import get_cart
 
 User = get_user_model()
 
@@ -94,11 +94,7 @@ class ShoppingCartViewSet(viewsets.ModelViewSet):
             recipe__shopping_cart__user=request.user).values(
             'ingredients__name',
             'ingredients__measurement_unit').annotate(total=Sum('amount'))
-        shopping_cart = '\n'.join([
-            f'{ingredient["ingredients__name"]} - {ingredient["total"]} '
-            f'{ingredient["ingredients__measurement_unit"]}'
-            for ingredient in ingredients
-        ])
+        shopping_cart = get_cart(ingredients)
         filename = 'shopping_cart.txt'
         response = HttpResponse(shopping_cart, content_type='text/plain')
         response['Content-Disposition'] = f'attachment; filename={filename}'

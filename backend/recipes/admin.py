@@ -1,3 +1,4 @@
+# модель подписки зарегистрирована в админке приложения users
 from django.contrib import admin
 
 from recipes.models import (Favorite, Ingredient, IngredientAmount, Recipe,
@@ -11,6 +12,11 @@ class FavoriteAdmin(admin.ModelAdmin):
 class IngredientAdmin(admin.ModelAdmin):
     list_display = ('name', 'measurement_unit')
     list_filter = ('name',)
+    search_fields = ('name',)
+
+
+class IngredientInline(admin.TabularInline):
+    model = IngredientAmount
 
 
 class IngredientAmountAdmin(admin.ModelAdmin):
@@ -20,6 +26,7 @@ class IngredientAmountAdmin(admin.ModelAdmin):
 class RecipeAdmin(admin.ModelAdmin):
     list_display = ('name', 'author')
     list_filter = ('author', 'name', 'tags')
+    inlines = [IngredientInline]
     readonly_fields = ('count_favorites',)
 
     def count_favorites(self, obj):

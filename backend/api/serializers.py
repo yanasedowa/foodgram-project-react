@@ -94,7 +94,7 @@ class CustomUserSerializer(UserSerializer):
 class FollowSerializer(serializers.ModelSerializer):
     is_subscribed = serializers.SerializerMethodField()
     recipes = serializers.SerializerMethodField()
-    recipes_count = serializers.SerializerMethodField()
+    recipes_count = serializers.ReadOnlyField(source='author.recipes.count')
 
     class Meta:
         model = Follow
@@ -108,13 +108,11 @@ class FollowSerializer(serializers.ModelSerializer):
 
     def get_recipes(self, obj):
         request = self.context.get('request')
-        queryset = Recipe.objects.filter(author=obj.author)[:3]
-        return RecipePreviewSerializer(
-            queryset, many=True, context={'request': request}
-        ).data
-
-    def get_recipes_count(self, obj):
-        return Recipe.objects.filter(author=obj.author).count()
+        limit = request.GET.get('recipes_limit')
+        queryset = Recipe.objects.filter(author=obj.author)
+        if limit:
+            queryset = queryset[:int(limit)]
+        return RecipePreviewSerializer(queryset, many=True).data
 
 
 class RecipeSerializer(serializers.ModelSerializer):
@@ -163,7 +161,11 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
                 )
             if ingredient.get('amount') <= 0:
                 raise serializers.ValidationError(
-                    ('Минимальное количество ингридиентов 1.')
+                    ('Минимальное количество ингредиентов 1.')
+                )
+            if data.get('cooking_time') <= 0:
+                raise serializers.ValidationError(
+                    'Минимальное время 1 минута.'
                 )
             ingredient_id = ingredient.get('id')
             if ingredient_id in ingredients_validated:
@@ -174,20 +176,12 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
         data['ingredients'] = ingredients
         return data
 
-    def validate_cooking_time(self, value):
-        if value <= 0:
-            raise serializers.ValidationError(
-                'Минимальное время 1 минута'
-            )
-        return value
-
     def create_ingredient(self, ingredients, recipe):
-        for ingredient in ingredients:
-            IngredientAmount.objects.get_or_create(
-                recipe=recipe,
-                ingredients=ingredient['id'],
-                amount=ingredient['amount']
-            )
+        IngredientAmount.objects.bulk_create([IngredientAmount(
+            ingredient=ingredient['id'],
+            recipe=recipe,
+            amount=ingredient['amount']
+        ) for ingredient in ingredients])
 
     def create(self, validated_data):
         tags = validated_data.pop('tags')
@@ -199,6 +193,9 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
         return recipe
 
     def update(self, instance, validated_data):
+        instance.cooking_time = validated_data.get(
+            'cooking_time', instance.cooking_time
+        )
         ingredients = validated_data.pop('ingredients')
         tags = validated_data.pop('tags')
         instance.ingredients.clear()
