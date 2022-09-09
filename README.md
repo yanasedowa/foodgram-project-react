@@ -259,6 +259,7 @@ http://localhost/api/v1/titles/{titles_id}/
 -   [Gunicorn](https://gunicorn.org/)
 -   [nginx](https://www.nginx.com/)
 -   [Docker](https://www.docker.com/products/docker-desktop/)
+-   [GitHub Actions](https://github.com/features/actions)
 
 
 ### Автор
