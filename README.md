@@ -21,7 +21,7 @@
 
 ### http://62.84.120.127/
 
-login: sedow
+login: yana
 password: 541007fap
 
 ### Как запустить проект:
@@ -115,7 +115,7 @@ sudo chmod +x /usr/local/bin/docker-compose
 
 ```
 
-docker-compose exec web python manage.py uploadcsv
+docker-compose exec backend python manage.py uploadcsv
 
 ```
 
