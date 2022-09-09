@@ -7,7 +7,6 @@ from django.shortcuts import get_object_or_404
 from djoser.views import UserViewSet
 from rest_framework import viewsets
 from rest_framework.decorators import action
-from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
@@ -15,6 +14,7 @@ from recipes.models import (Favorite, Ingredient, IngredientAmount, Recipe,
                             ShoppingCart, Tag)
 from users.models import Follow
 from .filters import IngredientSearchFilter, RecipeFilter
+from .pagination import LimitPageNumberPagination
 from .permissions import AdminOrReadOnly, AdminUserOrReadOnly
 from .serializers import (FavoriteSerializer, FollowSerializer,
                           IngredientSerializer, RecipeCreateSerializer,
@@ -26,7 +26,6 @@ User = get_user_model()
 
 
 class IngredientsViewSet(viewsets.ReadOnlyModelViewSet):
-    pagination_class = None
     queryset = Ingredient.objects.all()
     serializer_class = IngredientSerializer
     permission_classes = (AdminOrReadOnly,)
@@ -35,7 +34,6 @@ class IngredientsViewSet(viewsets.ReadOnlyModelViewSet):
 
 
 class TagsViewSet(viewsets.ReadOnlyModelViewSet):
-    pagination_class = None
     queryset = Tag.objects.all()
     serializer_class = TagSerializer
     permission_classes = (AdminOrReadOnly,)
@@ -43,7 +41,7 @@ class TagsViewSet(viewsets.ReadOnlyModelViewSet):
 
 class RecipeViewSet(viewsets.ModelViewSet):
     queryset = Recipe.objects.all()
-    pagination_class = PageNumberPagination
+    pagination_class = LimitPageNumberPagination
     filter_class = RecipeFilter
     permission_classes = (AdminUserOrReadOnly,)
 
@@ -54,10 +52,9 @@ class RecipeViewSet(viewsets.ModelViewSet):
 
 
 class ShoppingCartViewSet(viewsets.ModelViewSet):
-    pagination_class = None
     queryset = ShoppingCart.objects.all()
     serializer_class = ShoppingCartSerializer
-    pagination_class = PageNumberPagination
+    pagination_class = LimitPageNumberPagination
     permission_classes = (IsAuthenticated,)
 
     @action(
@@ -107,7 +104,7 @@ class ShoppingCartViewSet(viewsets.ModelViewSet):
 class FavoriteViewSet(viewsets.ModelViewSet):
     queryset = Favorite.objects.all()
     serializer_class = FavoriteSerializer
-    pagination_class = PageNumberPagination
+    pagination_class = LimitPageNumberPagination
     permission_classes = (IsAuthenticated,)
 
     @action(
@@ -140,7 +137,7 @@ class FavoriteViewSet(viewsets.ModelViewSet):
 
 
 class FollowViewSet(UserViewSet):
-    pagination_class = None
+    pagination_class = LimitPageNumberPagination
 
     @action(
         methods=['post'],
