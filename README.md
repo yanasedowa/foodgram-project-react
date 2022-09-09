@@ -1,4 +1,5 @@
 # foodgram
+![Django-app workflow](https://github.com/yanasedowa/foodgram-project-react/actions/workflows/main.yml/badge.svg?event=push)
 
 ### Описание
 
