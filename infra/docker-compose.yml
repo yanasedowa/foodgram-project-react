@@ -12,7 +12,7 @@ services:
     env_file:
       - ./.env
 
-  web:
+  backend:
     image: yanqee/foodgram_backend:latest
     restart: always
     volumes:
@@ -28,7 +28,7 @@ services:
     volumes:
       - ../frontend/:/app/result_build/
     depends_on:
-      - web
+      - backend
 
   nginx:
     image: nginx:1.21.3-alpine
