@@ -193,6 +193,7 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
             recipe=recipe,
             amount=ingredient['amount']
         ) for ingredient in ingredients])
+        return ingredients
 
     def create(self, validated_data):
         tags = validated_data.pop('tags')
