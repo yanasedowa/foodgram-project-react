@@ -4,7 +4,7 @@ from django.contrib.auth import get_user_model
 from django.db.models import Sum
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
-from djoser.views import UserViewSet
+#from djoser.views import UserViewSet
 from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
@@ -16,7 +16,8 @@ from users.models import Follow
 from .filters import IngredientSearchFilter, RecipeFilter
 from .pagination import LimitPageNumberPagination
 from .permissions import AdminOrReadOnly, AdminUserOrReadOnly
-from .serializers import (FavoriteSerializer, FollowSerializer,
+from .serializers import (CustomUserSerializer, FavoriteSerializer,
+                          #FollowSerializer,
                           IngredientSerializer, RecipeCreateSerializer,
                           RecipePreviewSerializer, RecipeSerializer,
                           ShoppingCartSerializer, TagSerializer)
@@ -136,7 +137,7 @@ class FavoriteViewSet(viewsets.ModelViewSet):
         )
 
 
-class FollowViewSet(UserViewSet):
+class FollowViewSet(viewsets.ModelViewSet):
     pagination_class = LimitPageNumberPagination
 
     @action(
@@ -158,7 +159,7 @@ class FollowViewSet(UserViewSet):
                 status=HTTPStatus.BAD_REQUEST
             )
         follow = Follow.objects.create(user=user, author=author)
-        serializer = FollowSerializer(follow, context={'request': request})
+        serializer = CustomUserSerializer(follow, context={'request': request})
         return Response(serializer.data, status=HTTPStatus.CREATED)
 
     @action(
@@ -190,7 +191,7 @@ class FollowViewSet(UserViewSet):
         user = request.user
         queryset = Follow.objects.filter(user=user)
         pages = self.paginate_queryset(queryset)
-        serializer = FollowSerializer(
+        serializer = CustomUserSerializer(
             pages, many=True,
             context={'request': request}
         )
