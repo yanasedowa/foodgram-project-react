@@ -191,7 +191,7 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
         ingredients = validated_data['ingredients']
         tags = validated_data['tags']
         for tag in tags:
-            instance.tags.add(tag)        
+            instance.tags.add(tag)
         IngredientAmount.objects.bulk_create([IngredientAmount(
             ingredient=ingredient['id'],
             recipe=instance,
