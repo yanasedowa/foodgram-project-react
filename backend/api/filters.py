@@ -13,11 +13,23 @@ class RecipeFilter(django_filters.FilterSet):
         queryset=Tag.objects.all(),
         to_field_name='slug',
     )
-    is_favorited = django_filters.BooleanFilter()
-    is_in_shopping_cart = django_filters.BooleanFilter()
+    is_favorited = django_filters.BooleanFilter(method='is_favorited')
+    is_in_shopping_cart = django_filters.BooleanFilter(
+        method='is_in_shopping_cart'
+    )
     author = django_filters.ModelMultipleChoiceFilter(
         queryset=User.objects.all()
     )
+
+    def is_favorited(self, queryset, name, value):
+        if value:
+            return queryset.filter(favorites__user=self.request.user)
+        return queryset
+
+    def is_in_shopping_cart(self, queryset, name, value):
+        if value:
+            return queryset.filter(shopping_cart__user=self.request.user)
+        return queryset
 
     class Meta:
         model = Recipe
