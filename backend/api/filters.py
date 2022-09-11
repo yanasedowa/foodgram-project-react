@@ -21,7 +21,12 @@ class RecipeFilter(django_filters.FilterSet):
 
     class Meta:
         model = Recipe
-        fields = ['tags__slug', 'author__id']
+        fields = [
+            'tags__slug',
+            'author__id',
+            'is_favorited',
+            'is_in_shopping_cart'
+        ]
 
 
 class IngredientSearchFilter(SearchFilter):
