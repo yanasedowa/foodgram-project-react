@@ -4,6 +4,7 @@ from django.contrib.auth import get_user_model
 from django.db.models import Sum
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
+from django_filters.rest_framework import DjangoFilterBackend
 from djoser.views import UserViewSet
 from rest_framework import viewsets
 from rest_framework.decorators import action
@@ -42,7 +43,8 @@ class TagsViewSet(viewsets.ReadOnlyModelViewSet):
 class RecipeViewSet(viewsets.ModelViewSet):
     queryset = Recipe.objects.all()
     pagination_class = LimitPageNumberPagination
-    filter_class = RecipeFilter
+    filter_backends = (DjangoFilterBackend,)
+    filterset_class = RecipeFilter
     permission_classes = (AdminUserOrReadOnly,)
 
     def get_serializer_class(self):
@@ -129,8 +131,9 @@ class FavoriteViewSet(viewsets.ModelViewSet):
     )
     def delele_from_favorite(self, request, id=None):
         user = request.user
-        if Favorite.objects.filter(user=user, recipe__id=id).exists():
-            Favorite.objects.filter(user=user, recipe__id=id).delete()
+        favorite = Favorite.objects.filter(user=user, recipe__id=id)
+        if favorite.exists():
+            favorite.delete()
             return Response(status=HTTPStatus.NO_CONTENT)
         return Response(
             'Невозможно удалить рецепт из Избранного',
