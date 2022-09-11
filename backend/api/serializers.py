@@ -89,7 +89,7 @@ class CustomUserSerializer(UserSerializer):
         user = self.context.get('request').user
         if user.is_anonymous:
             return False
-        return Follow.objects.filter(user=user, author=obj).exists()
+        return Follow.objects.filter(user=user, author=obj.id).exists()
 
 
 class FollowSerializer(serializers.ModelSerializer):
@@ -234,16 +234,3 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
         instance = self.create_ingredient(ingredients, instance)
         instance.tags.set(tags)
         return super().update(instance, validated_data)
-
-# class FavoriteSerializer(serializers.ModelSerializer):
-
-#     class Meta:
-#         model = Favorite
-#         fields = ('user', 'recipe')
-
-
-# class ShoppingCartSerializer(serializers.ModelSerializer):
-
-#     class Meta:
-#         model = ShoppingCart
-#         fields = '__all__'
