@@ -17,15 +17,10 @@ router.register(
 router.register(
     r'recipes/(?P<recipes_id>\d+)/shopping_cart', ShoppingCartViewSet
 )
-router.register(
-    r'recipes/(?P<recipes_id>\d+)/favorite', FavoriteViewSet
-)
+router.register('favorites', FavoriteViewSet)
 
 urlpatterns = [
     path('', include(router.urls)),
     path('', include('djoser.urls')),
     path('auth/', include('djoser.urls.authtoken')),
-    path('recipes/download_shopping_cart/',
-         ShoppingCartViewSet.as_view({'get': 'download'}), name='download'),
-    path('', include(router.urls)),
 ]
