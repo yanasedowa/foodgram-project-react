@@ -15,7 +15,19 @@ class RecipeFilter(django_filters.FilterSet):
 
     class Meta:
         model = Recipe
-        fields = ['tags__slug']
+        fields = ('tags__slug', 'is_favorited', 'is_in_shopping_cart')
+
+    def is_favorited(self, queryset, name, value):
+        user = self.request.user
+        if value:
+            return queryset.filter(favorites__user=user)
+        return Recipe.objects.all()
+
+    def is_in_shopping_cart(self, queryset, name, value):
+        user = self.request.user
+        if value:
+            return queryset.filter(shopping_cart__user=user)
+        return Recipe.objects.all()
 
 
 class IngredientSearchFilter(SearchFilter):
