@@ -154,16 +154,7 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
         )
 
     def validate(self, data):
-        tags = data.get('tags')
         ingredients = data.get('ingredients')
-        if not tags:
-            raise serializers.ValidationError(
-                'Добавьте тег.'
-            )
-        if not ingredients:
-            raise serializers.ValidationError(
-                'Добавьте ингредиент.'
-            )
         ingredients_validated = []
         for ingredient in ingredients:
             if type(ingredient.get('amount')) is not int:
