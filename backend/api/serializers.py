@@ -235,16 +235,15 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
         instance.tags.set(tags)
         return super().update(instance, validated_data)
 
+# class FavoriteSerializer(serializers.ModelSerializer):
 
-class FavoriteSerializer(serializers.ModelSerializer):
-
-    class Meta:
-        model = Favorite
-        fields = ('user', 'recipe')
+#     class Meta:
+#         model = Favorite
+#         fields = ('user', 'recipe')
 
 
-class ShoppingCartSerializer(serializers.ModelSerializer):
+# class ShoppingCartSerializer(serializers.ModelSerializer):
 
-    class Meta:
-        model = ShoppingCart
-        fields = '__all__'
+#     class Meta:
+#         model = ShoppingCart
+#         fields = '__all__'
