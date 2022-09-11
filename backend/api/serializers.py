@@ -136,7 +136,7 @@ class RecipeSerializer(serializers.ModelSerializer):
         fields = ('id', 'tags', 'author', 'ingredients',
                   'is_favorited', 'is_in_shopping_cart', 'name', 'image',
                   'text', 'cooking_time',)
-    
+
     def get_is_favorited(self, obj):
         request = self.context.get('request')
         if request is None or request.user.is_anonymous:
@@ -150,8 +150,10 @@ class RecipeSerializer(serializers.ModelSerializer):
         request = self.context.get('request')
         if request is None or request.user.is_anonymous:
             return False
-        if ShoppingCart.objects.filter(user=request.user,
-                               recipe__id=obj.id).exists():
+        if ShoppingCart.objects.filter(
+            user=request.user,
+            recipe__id=obj.id
+        ).exists():
             return True
         return False
 
