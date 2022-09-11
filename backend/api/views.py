@@ -79,6 +79,7 @@ class ShoppingCartViewSet(viewsets.ModelViewSet):
     def delele_from_shopping_cart(self, request, id=None):
         user = request.user
         if ShoppingCart.objects.filter(user=user, recipe__id=id).exists():
+            ShoppingCart.objects.filter(user=user, recipe__id=id).delete()
             return Response(status=HTTPStatus.NO_CONTENT)
         return Response(
             'Невозможно удалить рецепт из списка',
@@ -129,6 +130,7 @@ class FavoriteViewSet(viewsets.ModelViewSet):
     def delele_from_favorite(self, request, id=None):
         user = request.user
         if Favorite.objects.filter(user=user, recipe__id=id).exists():
+            Favorite.objects.filter(user=user, recipe__id=id).delete()
             return Response(status=HTTPStatus.NO_CONTENT)
         return Response(
             'Невозможно удалить рецепт из Избранного',
