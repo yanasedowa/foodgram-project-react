@@ -122,7 +122,7 @@ class FavoriteViewSet(viewsets.ModelViewSet):
                 status=HTTPStatus.BAD_REQUEST)
         recipe = get_object_or_404(Recipe, id=id)
         Favorite.objects.create(user=user, recipe=recipe)
-        serializer = RecipePreviewSerializer(recipe)
+        serializer = FavoriteSerializer()
         return Response(serializer.data, status=HTTPStatus.CREATED)
 
     @action(
