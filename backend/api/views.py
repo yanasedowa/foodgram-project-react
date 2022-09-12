@@ -220,43 +220,49 @@ class FollowViewSet(UserViewSet):
     pagination_class = LimitPageNumberPagination
 
     @action(
-        methods=['post'],
+        methods=['post', 'delete'],
         detail=True,
         permission_classes=[IsAuthenticated],
     )
     def subscribe(self, request, id=None):
         user = request.user
         author = get_object_or_404(User, id=id)
-        if user == author:
-            return Response(
-                'Нельзя подписаться на себя',
-                status=HTTPStatus.BAD_REQUEST
-            )
-        if Follow.objects.filter(user=user, author=author).exists():
-            return Response(
-                'Такая подписка уже существует',
-                status=HTTPStatus.BAD_REQUEST
-            )
-        follow = Follow.objects.create(user=user, author=author)
-        serializer = FollowSerializer(follow, context={'request': request})
-        return Response(serializer.data, status=HTTPStatus.CREATED)
-
-    @subscribe.mapping.delete
-    def del_subscribe(self, request, id=None):
-        user = request.user
-        author = get_object_or_404(User, id=id)
-        if user == author:
-            return Response(
-                'Отписаться от себя нельзя',
-                status=HTTPStatus.BAD_REQUEST
-            )
-        follow = Follow.objects.filter(user=user, author=author)
+        if request.method == 'POST':
+            if user == author:
+                return Response(
+                    'Нельзя подписаться на себя',
+                    status=HTTPStatus.BAD_REQUEST
+                )
+            if Follow.objects.filter(user=user, author=author).exists():
+                return Response(
+                    'Такая подписка уже существует',
+                    status=HTTPStatus.BAD_REQUEST
+                )
+            follow = Follow.objects.create(user=user, author=author)
+            serializer = FollowSerializer(follow, context={'request': request})
+            return Response(serializer.data, status=HTTPStatus.CREATED)
         if not follow.exists():
             return Response(
                 'Вы не подписаны',
                 status=HTTPStatus.BAD_REQUEST)
         follow.delete()
         return Response(status=HTTPStatus.NO_CONTENT)
+    # @subscribe.mapping.delete
+    # def del_subscribe(self, request, id=None):
+    #     user = request.user
+    #     author = get_object_or_404(User, id=id)
+    #     if user == author:
+    #         return Response(
+    #             'Отписаться от себя нельзя',
+    #             status=HTTPStatus.BAD_REQUEST
+    #         )
+    #     follow = Follow.objects.filter(user=user, author=author)
+    #     if not follow.exists():
+    #         return Response(
+    #             'Вы не подписаны',
+    #             status=HTTPStatus.BAD_REQUEST)
+    #     follow.delete()
+    #     return Response(status=HTTPStatus.NO_CONTENT)
 
     @action(
         detail=False,
