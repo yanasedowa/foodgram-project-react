@@ -240,7 +240,6 @@ class FollowViewSet(UserViewSet):
     @action(
         methods=['delete'],
         detail=True,
-        permission_classes=[AdminUserOrReadOnly]
     )
     def unsubscribe(self, request, id=None):
         user = request.user
