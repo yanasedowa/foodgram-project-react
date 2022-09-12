@@ -5,8 +5,7 @@ from drf_extra_fields.fields import Base64ImageField
 from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
 
-from recipes.models import (Favorite, Ingredient, IngredientAmount, Recipe,
-                            ShoppingCart, Tag)
+from recipes.models import Ingredient, IngredientAmount, Recipe, Tag
 from users.models import Follow
 
 User = get_user_model()
@@ -128,34 +127,33 @@ class RecipeSerializer(serializers.ModelSerializer):
     ingredients = IngredientInRecipeSerializer(
         many=True, source='ingredient_amount'
     )
-    is_favorited = serializers.SerializerMethodField()
-    is_in_shopping_cart = serializers.SerializerMethodField()
+    is_favorited = serializers.BooleanField(default=False)
+    is_in_shopping_cart = serializers.BooleanField(default=False)
 
     class Meta:
         model = Recipe
         fields = ('id', 'tags', 'author', 'ingredients',
                   'is_favorited', 'is_in_shopping_cart', 'name', 'image',
                   'text', 'cooking_time',)
+    # def get_is_favorited(self, obj):
+    #     request = self.context.get('request')
+    #     if request is None or request.user.is_anonymous:
+    #         return False
+    #     if Favorite.objects.filter(user=request.user,
+    #                                recipe__id=obj.id).exists():
+    #         return True
+    #     return False
 
-    def get_is_favorited(self, obj):
-        request = self.context.get('request')
-        if request is None or request.user.is_anonymous:
-            return False
-        if Favorite.objects.filter(user=request.user,
-                                   recipe__id=obj.id).exists():
-            return True
-        return False
-
-    def get_is_in_shopping_cart(self, obj):
-        request = self.context.get('request')
-        if request is None or request.user.is_anonymous:
-            return False
-        if ShoppingCart.objects.filter(
-            user=request.user,
-            recipe__id=obj.id
-        ).exists():
-            return True
-        return False
+    # def get_is_in_shopping_cart(self, obj):
+    #     request = self.context.get('request')
+    #     if request is None or request.user.is_anonymous:
+    #         return False
+    #     if ShoppingCart.objects.filter(
+    #         user=request.user,
+    #         recipe__id=obj.id
+    #     ).exists():
+    #         return True
+    #     return False
 
 
 class RecipeCreateSerializer(serializers.ModelSerializer):
