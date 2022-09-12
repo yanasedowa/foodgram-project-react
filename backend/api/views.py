@@ -237,11 +237,7 @@ class FollowViewSet(UserViewSet):
         serializer = FollowSerializer(follow, context={'request': request})
         return Response(serializer.data, status=HTTPStatus.CREATED)
 
-    @action(
-        methods=['delete'],
-        detail=True,
-        permission_classes=[IsAuthenticated],
-    )
+    @subscribe.mapping.delete
     def del_subscribe(self, request, id=None):
         user = request.user
         author = get_object_or_404(User, id=id)
