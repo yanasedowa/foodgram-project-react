@@ -214,11 +214,12 @@ class RecipeViewSet(viewsets.ModelViewSet):
 
 class FollowViewSet(UserViewSet):
     pagination_class = LimitPageNumberPagination
+    permission_classes = (IsAuthenticated,)
 
     @action(
         methods=['post'],
+        url_path='subscribe',
         detail=True,
-        permission_classes=[IsAuthenticated]
     )
     def subscribe(self, request, id=None):
         user = request.user
@@ -240,6 +241,7 @@ class FollowViewSet(UserViewSet):
     @action(
         methods=['delete'],
         detail=True,
+        url_path='subscribe',
     )
     def unsubscribe(self, request, id=None):
         user = request.user
@@ -259,7 +261,6 @@ class FollowViewSet(UserViewSet):
 
     @action(
         detail=False,
-        permission_classes=[IsAuthenticated]
     )
     def subscriptions(self, request):
         user = request.user
