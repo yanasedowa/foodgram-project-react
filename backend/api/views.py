@@ -70,7 +70,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
         methods=['delete'],
         detail=True,
     )
-    def delele_from_favorite(self, request, id=None):
+    def del_from_favorite(self, request, id=None):
         user = request.user
         favorite = Favorite.objects.filter(user=user, recipe__id=id)
         if favorite.exists():
@@ -100,7 +100,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
         methods=['delete'],
         detail=True,
     )
-    def delele_from_shopping_cart(self, request, id=None):
+    def del_from_shopping_cart(self, request, id=None):
         user = request.user
         if ShoppingCart.objects.filter(user=user, recipe__id=id).exists():
             ShoppingCart.objects.filter(user=user, recipe__id=id).delete()
