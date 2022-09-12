@@ -55,7 +55,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
         methods=['post'],
         detail=True,
     )
-    def add_to_favorite(self, request, id=None):
+    def favorite(self, request, id=None):
         user = request.user
         if Favorite.objects.filter(user=user, recipe__id=id).exists():
             return Response(
@@ -85,7 +85,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
         methods=['post'],
         detail=True,
     )
-    def add_to_shopping_cart(self, request, id=None):
+    def shopping_cart(self, request, id=None):
         user = request.user
         if ShoppingCart.objects.filter(user=user, recipe__id=id).exists():
             return Response(
