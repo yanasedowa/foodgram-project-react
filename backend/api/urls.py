@@ -10,10 +10,11 @@ router = DefaultRouter()
 router.register('ingredients', IngredientsViewSet)
 router.register('tags', TagsViewSet)
 router.register('recipes', RecipeViewSet)
-router.register(r'users', FollowViewSet.as_view())
-# router.register(
-#     r'users/(?P<following_id>\d+)/subscribe', FollowViewSet
-# )
+#router.register(r'users', FollowViewSet.as_view())
+router.register(
+    r'users/(?P<following_id>\d+)/subscribe', FollowViewSet.as_view(),
+    name='subscribe'
+)
 #router.register(
 #     r'recipes/download_shopping_cart', ShoppingCartViewSet
 # )
