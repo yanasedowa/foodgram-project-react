@@ -12,18 +12,18 @@ router.register('tags', TagsViewSet)
 router.register('recipes', RecipeViewSet)
 #router.register(r'users', FollowViewSet.as_view())
 router.register(
-    r'users/(?P<following_id>\d+)/subscribe', FollowViewSet.as_view(),
-    name='subscribe'
+    r'users/(?P<following_id>\d+)/subscribe', FollowViewSet,
+    name= 'subscribe'
 )
 #router.register(
 #     r'recipes/download_shopping_cart', ShoppingCartViewSet
 # )
-router.register(
-    r'recipes/(?P<recipes_id>\d+)/shopping_cart', RecipeViewSet
-)
-router.register(
-    r'recipes/(?P<recipes_id>\d+)/favorite', RecipeViewSet
-)
+# router.register(
+#     r'recipes/(?P<recipes_id>\d+)/shopping_cart', ShoppingCartViewSet
+# )
+# router.register(
+#     r'recipes/(?P<recipes_id>\d+)/favorite', FavoriteViewSet
+# )
 
 urlpatterns = [
     path('', include(router.urls)),
