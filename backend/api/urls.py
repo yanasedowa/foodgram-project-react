@@ -18,12 +18,12 @@ router.register(
 #router.register(
 #     r'recipes/download_shopping_cart', ShoppingCartViewSet
 # )
-# router.register(
-#     r'recipes/(?P<recipes_id>\d+)/shopping_cart', ShoppingCartViewSet
-# )
-# router.register(
-#     r'recipes/(?P<recipes_id>\d+)/favorite', FavoriteViewSet
-# )
+router.register(
+    r'recipes/(?P<recipes_id>\d+)/shopping_cart', RecipeViewSet
+)
+router.register(
+    r'recipes/(?P<recipes_id>\d+)/favorite', RecipeViewSet
+)
 
 urlpatterns = [
     path('', include(router.urls)),
