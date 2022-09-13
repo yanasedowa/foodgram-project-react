@@ -1,8 +1,8 @@
 from django.urls import include, path
 from rest_framework.routers import DefaultRouter
 
-from api.views import (FollowViewSet, IngredientsViewSet, RecipeViewSet,
-                       TagsViewSet)
+from api.views import (FavoriteViewSet, FollowViewSet, IngredientsViewSet,
+                       RecipeViewSet, ShoppingCartViewSet, TagsViewSet)
 
 app_name = 'api'
 
@@ -13,17 +13,17 @@ router.register('recipes', RecipeViewSet)
 #router.register(r'users', FollowViewSet.as_view())
 router.register(
     r'users/(?P<following_id>\d+)/subscribe', FollowViewSet,
-    name= 'subscribe'
+    name='subscribe'
 )
-#router.register(
-#     r'recipes/download_shopping_cart', ShoppingCartViewSet
-# )
-# router.register(
-#     r'recipes/(?P<recipes_id>\d+)/shopping_cart', ShoppingCartViewSet
-# )
-# router.register(
-#     r'recipes/(?P<recipes_id>\d+)/favorite', FavoriteViewSet
-# )
+router.register(
+    r'recipes/download_shopping_cart', ShoppingCartViewSet
+)
+router.register(
+    r'recipes/(?P<recipes_id>\d+)/shopping_cart', ShoppingCartViewSet
+)
+router.register(
+    r'recipes/(?P<recipes_id>\d+)/favorite', FavoriteViewSet
+)
 
 urlpatterns = [
     path('', include(router.urls)),

@@ -83,7 +83,7 @@ class CustomUserSerializer(UserSerializer):
         model = User
         fields = ('email', 'id', 'username', 'first_name',
                   'last_name', 'is_subscribed')
-        # read_only_fields = 'is_subscribed',
+        read_only_fields = 'is_subscribed',
 
     def get_is_subscribed(self, obj):
         user = self.context.get('request').user
@@ -234,3 +234,17 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
         instance = self.create_ingredient(ingredients, instance)
         instance.tags.set(tags)
         return super().update(instance, validated_data)
+
+
+class FavoriteSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Favorite
+        fields = ('user', 'recipe')
+
+
+class ShoppingCartSerializer(serializers.ModelSerializer):
+
+    class Meta(FavoriteSerializer.Meta):
+        model = ShoppingCart
+        fields = '__all__'
