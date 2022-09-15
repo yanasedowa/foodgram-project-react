@@ -128,8 +128,12 @@ class RecipeSerializer(serializers.ModelSerializer):
     ingredients = IngredientInRecipeSerializer(
         many=True, source='ingredient_amount'
     )
-    is_favorited = serializers.SerializerMethodField()
-    is_in_shopping_cart = serializers.SerializerMethodField()
+    is_favorited = serializers.SerializerMethodField(
+        method_name='get_is_favorited'
+    )
+    is_in_shopping_cart = serializers.SerializerMethodField(
+        method_name='get_is_in_shopping_cart'
+    )
 
     class Meta:
         model = Recipe
@@ -141,8 +145,8 @@ class RecipeSerializer(serializers.ModelSerializer):
         request = self.context.get('request')
         if request is None or request.user.is_anonymous:
             return False
-        if Favorite.objects.filter(user=request.user,
-                                   recipe__id=obj.id).exists():
+        if Recipe.objects.filter(favorites__user=request.user,
+                                 id=obj.id).exists():
             return True
         return False
 
@@ -150,9 +154,9 @@ class RecipeSerializer(serializers.ModelSerializer):
         request = self.context.get('request')
         if request is None or request.user.is_anonymous:
             return False
-        if ShoppingCart.objects.filter(
-            user=request.user,
-            recipe__id=obj.id
+        if Recipe.objects.filter(
+            shopping_cart__user=request.user,
+            id=obj.id
         ).exists():
             return True
         return False
@@ -204,7 +208,7 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
         for tag in tags:
             instance.tags.add(tag)
         IngredientAmount.objects.bulk_create([IngredientAmount(
-            ingredient=ingredient['id'],
+            ingredients_id=ingredient['id'],
             recipe=instance,
             amount=ingredient['amount']
         ) for ingredient in ingredients])
@@ -231,7 +235,7 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
         tags = validated_data.pop('tags')
         instance.ingredients.clear()
         instance.tags.clear()
-        instance = self.create_ingredient(ingredients, instance)
+        instance = self.add_ingredient_tags(ingredients, instance)
         instance.tags.set(tags)
         return super().update(instance, validated_data)
 

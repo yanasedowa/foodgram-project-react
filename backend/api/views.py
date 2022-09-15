@@ -1,16 +1,15 @@
 from http import HTTPStatus
 
 from django.contrib.auth import get_user_model
-from django.db.models import Sum
+from django.db.models import BooleanField, Exists, OuterRef, Sum, Value
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
-#from djoser.views import UserViewSet
+from djoser.views import UserViewSet
 from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import SAFE_METHODS, IsAuthenticated
 from rest_framework.response import Response
-from rest_framework.views import APIView
 
 from recipes.models import (Favorite, Ingredient, IngredientAmount, Recipe,
                             ShoppingCart, Tag)
@@ -21,7 +20,7 @@ from .permissions import AdminOrReadOnly, AdminUserOrReadOnly
 from .serializers import (FavoriteSerializer, FollowSerializer,
                           IngredientSerializer, RecipeCreateSerializer,
                           RecipePreviewSerializer, RecipeSerializer,
-                          ShoppingCartSerializer, TagSerializer)
+                          TagSerializer)
 from .utils import get_cart
 
 User = get_user_model()
@@ -53,36 +52,47 @@ class RecipeViewSet(viewsets.ModelViewSet):
             return RecipeSerializer
         return RecipeCreateSerializer
 
+    def get_queryset(self):
+        user = self.request.user
+        queryset = Recipe.objects.all()
 
-class ShoppingCartViewSet(viewsets.ModelViewSet):
-    queryset = ShoppingCart.objects.all()
-    serializer_class = ShoppingCartSerializer
-    pagination_class = LimitPageNumberPagination
-    permission_classes = (IsAuthenticated,)
+        if user.is_authenticated:
+            queryset = queryset.annotate(
+                is_favorited=Exists(Favorite.objects.filter(
+                    user=user, recipe__pk=OuterRef('pk'))
+                ),
+                is_in_shopping_cart=Exists(ShoppingCart.objects.filter(
+                    user=user, recipe__pk=OuterRef('pk'))
+                )
+            )
+        else:
+            queryset = queryset.annotate(
+                is_favorited=Value(False, output_field=BooleanField()),
+                is_in_shopping_cart=Value(False, output_field=BooleanField())
+            )
+        return queryset
 
     @action(
         methods=['post'],
         detail=True,
     )
-    def shopping_cart(self, request, id=None):
+    def shopping_cart(self, request, pk=None):
         user = request.user
-        if ShoppingCart.objects.filter(user=user, recipe__id=id).exists():
+        if ShoppingCart.objects.filter(user=user, recipe__id=pk).exists():
             return Response(
                 'Рецепт уже есть в списке',
                 status=HTTPStatus.BAD_REQUEST)
-        recipe = get_object_or_404(Recipe, id=id)
+        recipe = get_object_or_404(Recipe, id=pk)
         ShoppingCart.objects.create(user=user, recipe=recipe)
         serializer = RecipePreviewSerializer(recipe)
         return Response(serializer.data, status=HTTPStatus.CREATED)
 
-    @action(
-        methods=['delete'],
-        detail=True,
-    )
-    def delele_from_shopping_cart(self, request, id=None):
+    @shopping_cart.mapping.delete
+    def delele_from_shopping_cart(self, request, pk=None):
         user = request.user
-        if ShoppingCart.objects.filter(user=user, recipe__id=id).exists():
-            ShoppingCart.objects.filter(user=user, recipe__id=id).delete()
+        cart = ShoppingCart.objects.filter(user=user, recipe__id=pk)
+        if cart.exists():
+            cart.delete()
             return Response(status=HTTPStatus.NO_CONTENT)
         return Response(
             'Невозможно удалить рецепт из списка',
@@ -104,35 +114,25 @@ class ShoppingCartViewSet(viewsets.ModelViewSet):
         response['Content-Disposition'] = f'attachment; filename={filename}'
         return response
 
-
-class FavoriteViewSet(viewsets.ModelViewSet):
-    queryset = Favorite.objects.all()
-    serializer_class = FavoriteSerializer
-    pagination_class = LimitPageNumberPagination
-    permission_classes = (IsAuthenticated,)
-
     @action(
         methods=['post'],
         detail=True,
     )
-    def favorite(self, request, id=None):
+    def favorite(self, request, pk=None):
         user = request.user
-        if Favorite.objects.filter(user=user, recipe__id=id).exists():
+        if Favorite.objects.filter(user=user, recipe__id=pk).exists():
             return Response(
                 'Рецепт уже в Избранном',
                 status=HTTPStatus.BAD_REQUEST)
-        recipe = get_object_or_404(Recipe, id=id)
+        recipe = get_object_or_404(Recipe, id=pk)
         Favorite.objects.create(user=user, recipe=recipe)
         serializer = FavoriteSerializer()
         return Response(serializer.data, status=HTTPStatus.CREATED)
 
-    @action(
-        methods=['delete'],
-        detail=True,
-    )
-    def delele_from_favorite(self, request, id=None):
+    @favorite.mapping.delete
+    def delele_from_favorite(self, request, pk=None):
         user = request.user
-        favorite = Favorite.objects.filter(user=user, recipe__id=id)
+        favorite = Favorite.objects.filter(user=user, recipe__id=pk)
         if favorite.exists():
             favorite.delete()
             return Response(status=HTTPStatus.NO_CONTENT)
@@ -142,82 +142,57 @@ class FavoriteViewSet(viewsets.ModelViewSet):
         )
 
 
-# class FollowViewSet(UserViewSet):
-#     pagination_class = LimitPageNumberPagination
+class FollowViewSet(UserViewSet):
+    pagination_class = LimitPageNumberPagination
 
-#     @action(
-#         methods=['post'],
-#         detail=True,
-#         permission_classes=[IsAuthenticated],
-#     )
-#     def subscribe(self, request, id=None):
-#         user = request.user
-#         author = get_object_or_404(User, id=id)
-#         if user == author:
-#             return Response(
-#                 'Нельзя подписаться на себя',
-#                 status=HTTPStatus.BAD_REQUEST
-#             )
-#         if Follow.objects.filter(user=user, author=author).exists():
-#             return Response(
-#                 'Такая подписка уже существует',
-#                 status=HTTPStatus.BAD_REQUEST
-#             )
-#         follow = Follow.objects.create(user=user, author=author)
-#         serializer = FollowSerializer(follow, context={'request': request})
-#         return Response(serializer.data, status=HTTPStatus.CREATED)
-
-#     @subscribe.mapping.delete
-#     def delete_subscribe(self, request, id=None):
-#         user = request.user
-#         author = get_object_or_404(User, id=id)
-#         if user == author:
-#             return Response(
-#                 'Нельзя отписаться от самого себя',
-#                 status=HTTPStatus.BAD_REQUEST)
-#         follow = Follow.objects.filter(user=user, author=author)
-#         if not follow.exists():
-#             return Response(
-#                 'Вы не подписаны',
-#                 status=HTTPStatus.BAD_REQUEST)
-#         follow.delete()
-#         return Response(status=HTTPStatus.NO_CONTENT)
-
-#     @action(
-#         detail=False,
-#         permission_classes=[IsAuthenticated],
-#     )
-#     def subscriptions(self, request):
-#         user = request.user
-#         queryset = Follow.objects.filter(user=user)
-#         pages = self.paginate_queryset(queryset)
-#         serializer = FollowSerializer(
-#             pages, many=True,
-#             context={'request': request}
-#         )
-#         return self.get_paginated_response(serializer.data)
-class FollowApiView(APIView):
-    permission_classes = [IsAuthenticated, ]
-
-    def post(self, request, pk=None):
+    @action(
+        methods=['post'],
+        detail=True,
+        permission_classes=[IsAuthenticated],
+    )
+    def subscribe(self, request, id=None):
         user = request.user
-        author = get_object_or_404(User, id=pk)
-        data = {
-            'author': author,
-            'user': user
-        }
-        serializer = FollowSerializer(data=data,
-                                      context={'request': request})
-        if not serializer.is_valid():
+        author = get_object_or_404(User, id=id)
+        if user == author:
             return Response(
-                serializer.errors,
+                'Нельзя подписаться на себя',
                 status=HTTPStatus.BAD_REQUEST
             )
-        serializer.save()
+        if Follow.objects.filter(user=user, author=author).exists():
+            return Response(
+                'Такая подписка уже существует',
+                status=HTTPStatus.BAD_REQUEST
+            )
+        follow = Follow.objects.create(user=user, author=author)
+        serializer = FollowSerializer(follow, context={'request': request})
         return Response(serializer.data, status=HTTPStatus.CREATED)
 
-    def delete(self, request, pk=None):
+    @subscribe.mapping.delete
+    def delete_subscribe(self, request, id=None):
         user = request.user
-        author = get_object_or_404(User, id=pk)
-        Follow.objects.filter(user=user, author=author).delete()
+        author = get_object_or_404(User, id=id)
+        if user == author:
+            return Response(
+                'Нельзя отписаться от самого себя',
+                status=HTTPStatus.BAD_REQUEST)
+        follow = Follow.objects.filter(user=user, author=author)
+        if not follow.exists():
+            return Response(
+                'Вы не подписаны',
+                status=HTTPStatus.BAD_REQUEST)
+        follow.delete()
         return Response(status=HTTPStatus.NO_CONTENT)
+
+    @action(
+        detail=False,
+        permission_classes=[IsAuthenticated],
+    )
+    def subscriptions(self, request):
+        user = request.user
+        queryset = Follow.objects.filter(user=user)
+        pages = self.paginate_queryset(queryset)
+        serializer = FollowSerializer(
+            pages, many=True,
+            context={'request': request}
+        )
+        return self.get_paginated_response(serializer.data)
